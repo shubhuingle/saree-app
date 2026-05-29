@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       Home Page Custom Styles
+       ========================================================================== */
+    
+    /* Hero Section Parallax Stack */
+    .hero-section {
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: calc(-1 * (var(--header-height) + var(--announcement-height)));
+    }
+
+    .hero-video-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        filter: brightness(0.4) contrast(1.1);
+        transform: scale(1.05);
+        transition: transform 0.5s ease;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(4,4,7,0.3) 0%, rgba(4,4,7,0.7) 100%);
+        z-index: 2;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        padding: 0 20px;
+        max-width: 1000px;
+    }
+
+    .hero-title-container {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 8rem;
+        font-weight: 300;
+        letter-spacing: 12px;
+        text-transform: uppercase;
+        color: var(--text-primary);
+        line-height: 1.1;
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 4rem;
+            letter-spacing: 6px;
+        }
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--accent-gold);
+        margin-bottom: 40px;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .hero-cta {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    /* Polaroid Card Parallax Strip (SKIMS & AuraScenes Style) */
+    .hero-polaroid-strip {
+        position: absolute;
+        bottom: 5vh;
+        left: 0;
+        width: 200%;
+        display: flex;
+        gap: 30px;
+        z-index: 4;
+        padding-left: 10%;
+        pointer-events: auto;
+        will-change: transform;
+    }
+
+    .polaroid-card {
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px;
+        width: 220px;
+        border-radius: 4px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        transform: rotate(var(--rotation));
+        transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .polaroid-card:hover {
+        transform: translateY(-15px) rotate(0deg) scale(1.05);
+        border-color: var(--accent-gold);
+        box-shadow: 0 20px 40px rgba(201, 169, 110, 0.25);
+    }
+
+    .polaroid-img {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+        border-radius: 2px;
+        margin-bottom: 12px;
+    }
+
+    .polaroid-caption {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 14px;
+        font-style: italic;
+        color: var(--text-primary);
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    /* Category Showcase Grid */
+    .section-padding {
+        padding: 100px 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 400;
+        letter-spacing: 4px;
+        text-align: center;
+        margin-bottom: 60px;
+        text-transform: uppercase;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 1px;
+        background-color: var(--accent-gold);
+        margin: 20px auto 0 auto;
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .category-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .category-card {
+        position: relative;
+        height: 500px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    .category-image-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        filter: brightness(0.65);
+    }
+
+    .category-card:hover .category-img {
+        transform: scale(1.08);
+        filter: brightness(0.8);
+    }
+
+    .category-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 40px;
+        background: linear-gradient(0deg, rgba(4,4,7,0.9) 0%, rgba(4,4,7,0) 100%);
+        z-index: 2;
+    }
+
+    .category-info h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .category-info p {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    /* Product Grid styling */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+
+    @media (max-width: 1024px) {
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+
+    /* PhonePe Banner Info */
+    .payment-info-banner {
+        background: linear-gradient(135deg, rgba(95, 37, 159, 0.15) 0%, rgba(201, 169, 110, 0.05) 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 60px 40px;
+        display: flex;
+        align-items: center;
+        gap: 60px;
+        margin-top: 60px;
+        box-shadow: var(--glass-shadow);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    @media (max-width: 768px) {
+        .payment-info-banner {
+            flex-direction: column;
+            gap: 30px;
+            text-align: center;
+        }
+    }
+
+    .payment-icon-block {
+        font-size: 80px;
+        color: #5f259f; /* PhonePe Violet */
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .payment-info-content h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+    }
+
+    .payment-info-content p {
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        max-width: 700px;
+    }
+
+    .payment-badges {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .badge-item {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--glass-border);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Theme Contrast Overrides (ensure readability over dark backdrops in Light Mode) */
+    .hero-title {
+        color: #f5f0e8 !important;
+    }
+    .hero-subtitle {
+        color: #c9a96e !important;
+    }
+    .polaroid-caption {
+        color: #f5f0e8 !important;
+    }
+    .category-info h3 {
+        color: #f5f0e8 !important;
+    }
+    .category-info p {
+        color: rgba(245, 240, 232, 0.75) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Preloader screen -->
+<div class="preloader" id="pagePreloader">
+    <div class="preloader-logo">ZARI & GRACE</div>
+</div>
+
+<!-- Hero Section Stack -->
+<section class="hero-section">
+    <!-- Parallax background layer -->
+    <div class="hero-overlay"></div>
+    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1600" class="hero-video-bg parallax-bg" id="heroBg" alt="Elegant Saree Lifestyle">
+
+    <!-- Foreground Content Stack -->
+    <div class="hero-content">
+        <div class="hero-title-container">
+            <h1 class="hero-title" id="heroTitle">Divine Silk</h1>
+        </div>
+        <p class="hero-subtitle" id="heroSubtitle">The Ultimate Saree Destination</p>
+        <div class="hero-cta" id="heroCta">
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary pulse-glow">Explore Collection</a>
+        </div>
+    </div>
+
+    <!-- Polaroid Card Parallax Row -->
+    <div class="hero-polaroid-strip" id="polaroidStrip">
+        <div class="polaroid-card" style="--rotation: -4deg;">
+            <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600" class="polaroid-img" alt="Banarasi Silk Saree">
+            <div class="polaroid-caption">Banarasi Gold Saree</div>
+        </div>
+        <div class="polaroid-card" style="--rotation: 3deg;">
+            <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=600" class="polaroid-img" alt="Kanchipuram Silk Saree">
+            <div class="polaroid-caption">Royal Kanchipuram</div>
+        </div>
+        <div class="polaroid-card" style="--rotation: -2deg;">
+            <img src="https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600" class="polaroid-img" alt="Chanderi Cotton Saree">
+            <div class="polaroid-caption">Lace Georgette Edit</div>
+        </div>
+        <div class="polaroid-card" style="--rotation: 5deg;">
+            <img src="https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600" class="polaroid-img" alt="Organza Saree">
+            <div class="polaroid-caption">Elegant Organza Bloom</div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 1: Categories -->
+<section class="section-padding reveal">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="category-grid">
+        {% for cat in categories %}
+        <div class="category-card">
+            <div class="category-image-container">
+                {% if cat.image %}
+                    <img src="{{ cat.image.url }}" class="category-img" alt="{{ cat.name }}">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1610030470298-316886e82f54?q=80&w=600" class="category-img" alt="Default Category">
+                {% endif %}
+            </div>
+            <div class="category-info">
+                <h3>{{ cat.name }}</h3>
+                <p>{{ cat.description|truncatewords:15 }}</p>
+                <a href="{% url 'store:product_list' %}?category={{ cat.slug }}" class="btn btn-secondary btn-small">Explore</a>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Default hardcoded categories for bootstrapping the frontend -->
+        <div class="category-card">
+            <div class="category-image-container">
+                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="category-img" alt="Pure Silk">
+            </div>
+            <div class="category-info">
+                <h3>Heritage Silk</h3>
+                <p>Pure Kanchipuram and Banarasi creations woven with gold zari thread work.</p>
+                <a href="{% url 'store:product_list' %}?category=silk" class="btn btn-secondary btn-small">Explore</a>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-image-container">
+                <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600" class="category-img" alt="Lace Georgette">
+            </div>
+            <div class="category-info">
+                <h3>Luxe Georgette</h3>
+                <p>Sheer flowy fabrics adorned with premium borders, sequence accents, and stones.</p>
+                <a href="{% url 'store:product_list' %}?category=georgette" class="btn btn-secondary btn-small">Explore</a>
+            </div>
+        </div>
+        <div class="category-card">
+            <div class="category-image-container">
+                <img src="https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600" class="category-img" alt="Modern Organza">
+            </div>
+            <div class="category-info">
+                <h3>Ethereal Organza</h3>
+                <p>Delicate, structured transparency highlighting floral prints and lightweight fits.</p>
+                <a href="{% url 'store:product_list' %}?category=organza" class="btn btn-secondary btn-small">Explore</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Section 2: Featured Sarees -->
+<section class="section-padding reveal">
+    <h2 class="section-title">Trending Creations</h2>
+    <div class="products-grid">
+        {% for product in featured_products %}
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <a href="{% url 'store:product_detail' product.slug %}" class="product-detail-link" data-slug="{{ product.slug }}">
+                    {% with imgs=product.images.all %}
+                        {% if imgs.count > 0 %}
+                            <img src="{{ imgs.0.image.url }}" class="product-image-main" alt="{{ product.name }}">
+                            {% if imgs.count > 1 %}
+                                <img src="{{ imgs.1.image.url }}" class="product-image-hover" alt="{{ product.name }}">
+                            {% endif %}
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="product-image-main" alt="Default Product Image">
+                        {% endif %}
+                    {% endwith %}
+                </a>
+                
+                <button class="btn btn-primary quick-add-btn" data-product-id="{{ product.id }}">
+                    <i class="ph-bold ph-shopping-bag" style="margin-right: 8px;"></i> Quick Add
+                </button>
+            </div>
+            <div class="product-meta">
+                <div class="product-price-row">
+                    <h3><a href="{% url 'store:product_detail' product.slug %}" class="product-detail-link" data-slug="{{ product.slug }}" style="text-decoration: none; color: inherit;">{{ product.name }}</a></h3>
+                    <button class="wishlist-btn wishlist-toggle" data-product-id="{{ product.id }}">
+                        <i class="ph-bold ph-heart"></i>
+                    </button>
+                </div>
+                <div class="product-price">
+                    {% if product.sale_price %}
+                        <span style="text-decoration: line-through; color: var(--text-muted); font-size: 13px; margin-right: 8px;">₹{{ product.price }}</span>
+                        <span>₹{{ product.sale_price }}</span>
+                    {% else %}
+                        <span>₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Default hardcoded product items for instant visualization -->
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="product-image-main" alt="Gold Banarasi Saree">
+                <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600" class="product-image-hover" alt="Gold Banarasi Saree">
+            </div>
+            <div class="product-meta">
+                <div class="product-price-row">
+                    <h3>Golden Heritage Banarasi Saree</h3>
+                    <button class="wishlist-btn"><i class="ph-bold ph-heart"></i></button>
+                </div>
+                <div class="product-price">₹12,499.00</div>
+            </div>
+        </div>
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600" class="product-image-main" alt="Crimson Kanchipuram Saree">
+                <img src="https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600" class="product-image-hover" alt="Crimson Kanchipuram Saree">
+            </div>
+            <div class="product-meta">
+                <div class="product-price-row">
+                    <h3>Crimson Royal Silk Kanchipuram Saree</h3>
+                    <button class="wishlist-btn"><i class="ph-bold ph-heart"></i></button>
+                </div>
+                <div class="product-price">₹18,999.00</div>
+            </div>
+        </div>
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <img src="https://images.unsplash.com/photo-1583391265517-35bbdba01229?q=80&w=600" class="product-image-main" alt="Blush Pink Georgette">
+                <img src="https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600" class="product-image-hover" alt="Blush Pink Georgette">
+            </div>
+            <div class="product-meta">
+                <div class="product-price-row">
+                    <h3>Blush Pink Sequence Border Saree</h3>
+                    <button class="wishlist-btn"><i class="ph-bold ph-heart"></i></button>
+                </div>
+                <div class="product-price">₹6,899.00</div>
+            </div>
+        </div>
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <img src="https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600" class="product-image-main" alt="Mint Green Organza">
+                <img src="https://images.unsplash.com/photo-1610030470298-316886e82f54?q=80&w=600" class="product-image-hover" alt="Mint Green Organza">
+            </div>
+            <div class="product-meta">
+                <div class="product-price-row">
+                    <h3>Mint Green Floral Organza Saree</h3>
+                    <button class="wishlist-btn"><i class="ph-bold ph-heart"></i></button>
+                </div>
+                <div class="product-price">₹5,499.00</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Section 3: Premium PhonePe Integrations Banner -->
+<section class="section-padding reveal">
+    <div class="payment-info-banner">
+        <div class="payment-icon-block">
+            <i class="ph-bold ph-credit-card"></i>
+        </div>
+        <div class="payment-info-content">
+            <h3>Seamless Payment Integrations</h3>
+            <p>We leverage industry standard secure gateways, enabling swift, trusted transactions. Experience complete ease with PhonePe - support for all major Credit/Debit Cards, Net Banking, and instant UPI QR payments natively.</p>
+            <div class="payment-badges">
+                <div class="badge-item"><i class="ph-bold ph-device-mobile"></i> Instant UPI Pay</div>
+                <div class="badge-item"><i class="ph-bold ph-shield-check"></i> 256-Bit Encrypted</div>
+                <div class="badge-item"><i class="ph-bold ph-wallet"></i> Multiple Wallets</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wishlist.js' %}"></script>
+<script>
+    // Fade out preloader on load
+    window.addEventListener('load', () => {
+        const preloader = document.getElementById('pagePreloader');
+        if (preloader) {
+            preloader.classList.add('fade-out');
+            setTimeout(() => preloader.remove(), 1000);
+        }
+    });
+
+    // Custom GSAP Hero Entrances & Parallax
+    if (typeof gsap !== 'undefined') {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Intros
+        gsap.to('#heroTitle', { opacity: 1, y: 0, duration: 1.5, delay: 1, ease: 'power4.out' });
+        gsap.to('#heroSubtitle', { opacity: 1, y: 0, duration: 1.5, delay: 1.3, ease: 'power4.out' });
+        gsap.to('#heroCta', { opacity: 1, y: 0, duration: 1.5, delay: 1.6, ease: 'power4.out' });
+
+        // Parallax scroll for hero background image
+        gsap.to('#heroBg', {
+            yPercent: 20,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: '.hero-section',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true
+            }
+        });
+
+        // Horizontal Parallax drift on polaroid cards strip
+        gsap.to('#polaroidStrip', {
+            x: '-30%',
+            ease: 'none',
+            scrollTrigger: {
+                trigger: '.hero-section',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        padding: 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .profile-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        letter-spacing: 2px;
+        margin-bottom: 40px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 50px;
+    }
+
+    @media (max-width: 992px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Sidebar info panel */
+    .profile-details-card {
+        height: fit-content;
+    }
+
+    .profile-avatar-block {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .profile-avatar-icon {
+        font-size: 64px;
+        color: var(--accent-gold);
+    }
+
+    .profile-username {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        margin-top: 10px;
+    }
+
+    .profile-email {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    /* Orders timeline styling */
+    .order-history-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 15px;
+    }
+
+    .order-record-card {
+        margin-bottom: 20px;
+    }
+
+    .order-record-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .order-record-ref h4 {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .order-record-ref span {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .order-record-status {
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--glass-border);
+    }
+
+    .status-paid {
+        border-color: var(--accent-gold);
+        color: var(--accent-gold);
+    }
+
+    .status-pending {
+        border-color: #dfbf87;
+        color: #dfbf87;
+    }
+
+    .order-record-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .order-record-summary p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+    }
+
+    .order-record-summary span {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .order-record-total {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--accent-gold);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1 class="profile-title">Account Dashboard</h1>
+    
+    <div class="profile-grid">
+        <!-- Sidebar Info -->
+        <aside class="profile-details-card glass-card">
+            <div class="profile-avatar-block">
+                <div class="profile-avatar-icon"><i class="ph-fill ph-user-circle"></i></div>
+                <h3 class="profile-username">{{ request.user.username }}</h3>
+                <p class="profile-email">{{ request.user.email }}</p>
+            </div>
+            
+            <div style="border-top: 1px solid var(--glass-border); padding-top:20px; text-align:center;">
+                <a href="{% url 'store:logout' %}" class="btn btn-secondary btn-small btn-block">Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- Orders Panel -->
+        <main class="profile-history">
+            <h2 class="order-history-title">Purchase History</h2>
+            
+            {% for order in orders %}
+            <div class="order-record-card glass-card">
+                <div class="order-record-header">
+                    <div class="order-record-ref">
+                        <h4>Order Ref: #ZG-{{ order.id|stringformat:"05d" }}</h4>
+                        <span>Placed on: {{ order.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="order-record-status {% if order.status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
+                        {{ order.status }}
+                    </div>
+                </div>
+                <div class="order-record-body">
+                    <div class="order-record-summary">
+                        <p>{{ order.items.count }} item(s) purchased</p>
+                        <span>Payment Mode: {{ order.payment_method }}</span>
+                    </div>
+                    <div class="order-record-total">
+                        ₹{{ order.total_amount }}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="glass-card" style="text-align: center; padding: 60px 0;">
+                <i class="ph-bold ph-receipt" style="font-size: 48px; color: var(--text-muted); margin-bottom: 20px; display:block;"></i>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">You haven't placed any orders yet.</p>
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary">Browse Sarees</a>
+            </div>
+            {% endfor %}
+        </main>
+    </div>
+</div>
+{% endblock %}

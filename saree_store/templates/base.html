@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Zari & Grace | Premium Glassmorphic Saree Boutique{% endblock %}</title>
+    
+    <!-- SEO Optimization -->
+    <meta name="description" content="Explore luxury sarees with premium glassmorphic shopping experiences. Tailored elegance in pure silk, georgette, and linen.">
+    <meta name="keywords" content="saree, luxury fashion, ecommerce, glassmorphism, online boutique">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Custom Lerp Cursor (AuraScenes style) -->
+    <div class="custom-cursor-dot" id="customCursorDot"></div>
+    <div class="custom-cursor-circle" id="customCursorCircle"></div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-track">
+            <span>✧ LUXURY SAREES IN PURE HANDWOVEN SILK ✧ FREE SHIPPING ACROSS INDIA ✧ ESTEEMED HERITAGE CRAFTSMANSHIP ✧ 10% OFF ON FIRST PURCHASE ✧ USE CODE: FIRST10 ✧</span>
+            <span>✧ LUXURY SAREES IN PURE HANDWOVEN SILK ✧ FREE SHIPPING ACROSS INDIA ✧ ESTEEMED HERITAGE CRAFTSMANSHIP ✧ 10% OFF ON FIRST PURCHASE ✧ USE CODE: FIRST10 ✧</span>
+        </div>
+    </div>
+
+    <!-- Glassmorphic Header -->
+    <header class="glass-header">
+        <div class="header-container">
+            <a href="{% url 'store:home' %}" class="logo">
+                <span class="logo-text">ZARI & GRACE</span>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="{% url 'store:home' %}" class="nav-link">Home</a>
+                <a href="{% url 'store:product_list' %}" class="nav-link">Sarees</a>
+                <a href="{% url 'store:wishlist' %}" class="nav-link">Wishlist</a>
+                <a href="{% url 'store:cart' %}" class="nav-link">Cart</a>
+            </nav>
+            
+            <div class="header-actions">
+                <!-- Theme Toggle Button -->
+                <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+                    <i class="ph-bold ph-sun" id="themeIcon"></i>
+                </button>
+                
+                <!-- Wishlist Btn -->
+                <a href="{% url 'store:wishlist' %}" class="icon-btn wishlist-icon-link">
+                    <i class="ph-bold ph-heart"></i>
+                    <span class="badge" id="wishlistBadge">{{ wishlist_count }}</span>
+                </a>
+                
+                <!-- Cart Trigger Sidebar Btn -->
+                <button class="icon-btn" id="cartToggleBtn" aria-label="View Cart">
+                    <i class="ph-bold ph-shopping-bag"></i>
+                    <span class="badge" id="cartBadge">{{ cart_count }}</span>
+                </button>
+                
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'store:profile' %}" class="icon-btn" title="Profile">
+                        <i class="ph-bold ph-user"></i>
+                    </a>
+                    <a href="{% url 'store:logout' %}" class="icon-btn" title="Logout">
+                        <i class="ph-bold ph-sign-out"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'store:login' %}" class="icon-btn" title="Login">
+                        <i class="ph-bold ph-user-circle"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- AJAX Slide-in Cart Sidebar -->
+    <div class="cart-drawer-overlay" id="cartOverlay"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="drawer-header">
+            <h3>Shopping Bag (<span id="drawerCount">{{ cart_count }}</span>)</h3>
+            <button class="close-btn" id="cartCloseBtn"><i class="ph-bold ph-x"></i></button>
+        </div>
+        <div class="drawer-body" id="drawerCartBody">
+            <!-- Loaded dynamically via AJAX -->
+            <div class="loading-spinner">
+                <i class="ph-bold ph-spinner spinner"></i>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="drawerSubtotal">₹0.00</span>
+            </div>
+            <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block">Checkout</a>
+            <a href="{% url 'store:cart' %}" class="btn btn-secondary btn-block">View Full Cart</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Glassmorphic Footer -->
+    <footer class="glass-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>ZARI & GRACE</h2>
+                <p>Redefining traditional luxury attire through clean glassmorphic digital experiences. Exquisite sarees curated for modern royalty.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="ph-bold ph-instagram-logo"></i></a>
+                    <a href="#" class="social-link"><i class="ph-bold ph-facebook-logo"></i></a>
+                    <a href="#" class="social-link"><i class="ph-bold ph-pinterest-logo"></i></a>
+                    <a href="#" class="social-link"><i class="ph-bold ph-twitter-logo"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Collections</h4>
+                <a href="{% url 'store:product_list' %}?category=silk">Pure Silk</a>
+                <a href="{% url 'store:product_list' %}?category=linen">Linen Elegance</a>
+                <a href="{% url 'store:product_list' %}?category=georgette">Georgette Grace</a>
+                <a href="{% url 'store:product_list' %}?category=cotton">Cotton Craft</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Customer Care</h4>
+                <a href="#">Shipping & Returns</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Contact Us</a>
+            </div>
+
+            <div class="footer-newsletter">
+                <h4>Stay Updated</h4>
+                <p>Subscribe to receive notifications of exclusive launches and seasonal edits.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed to newsletter!');">
+                    <input type="email" placeholder="Your Email" required class="glass-input">
+                    <button type="submit" class="btn btn-gold btn-small">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Zari & Grace. Crafted with passion. Powered by Antigravity AI.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Banner -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Product Quick View Modal -->
+    <div class="modal-overlay" id="productModalOverlay"></div>
+    <div class="product-quickview-modal" id="productQuickviewModal">
+        <button class="modal-close-btn" id="productModalCloseBtn" aria-label="Close modal"><i class="ph-bold ph-x"></i></button>
+        <div class="modal-body-content" id="productModalBody">
+            <div class="loading-spinner">
+                <i class="ph-bold ph-spinner spinner"></i>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CDN scripts -->
+    <!-- Lenis for Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+    <!-- GSAP for scroll animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Custom scripts -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/cart.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

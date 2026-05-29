@@ -1,0 +1,68 @@
+{% load static %}
+<div class="modal-grid">
+    <!-- Gallery Column -->
+    <div class="modal-gallery">
+        <div class="modal-main-image-wrap">
+            {% with imgs=product.images.all %}
+                {% if imgs.count > 0 %}
+                    <img src="{{ imgs.0.image.url }}" class="modal-main-image" id="modalHeroImage" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="modal-main-image" id="modalHeroImage" alt="placeholder">
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        {% if product.images.count > 1 %}
+        <div class="modal-thumbnails">
+            {% for img in product.images.all %}
+            <div class="modal-thumb {% if forloop.first %}active{% endif %}" data-img-url="{{ img.image.url }}">
+                <img src="{{ img.image.url }}" alt="{{ product.name }}">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Details Column -->
+    <div class="modal-info">
+        <span class="modal-category">{{ product.category.name }}</span>
+        <h2 class="modal-title">{{ product.name }}</h2>
+        
+        <div class="modal-price">
+            {% if product.sale_price %}
+                <span style="text-decoration: line-through; color: var(--text-muted); font-size: 15px; margin-right: 10px;">₹{{ product.price }}</span>
+                <span>₹{{ product.sale_price }}</span>
+            {% else %}
+                <span>₹{{ product.price }}</span>
+            {% endif %}
+        </div>
+        
+        <p class="modal-desc">{{ product.description }}</p>
+        
+        <div class="purchase-controls" style="margin-bottom: 25px;">
+            <div class="qty-selector">
+                <button type="button" class="qty-btn-det modal-minus"><i class="ph-bold ph-minus"></i></button>
+                <input type="text" class="qty-input-det" value="1" readonly id="modalQty">
+                <button type="button" class="qty-btn-det modal-plus"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            
+            <button class="btn btn-primary" id="modalAddToCart" data-product-id="{{ product.id }}" style="flex-grow: 1;">
+                <i class="ph-bold ph-shopping-bag" style="margin-right: 8px;"></i> Add to Bag
+            </button>
+            
+            <button class="icon-btn wishlist-toggle {% if in_wishlist %}active{% endif %}" data-product-id="{{ product.id }}" style="width: 48px; height: 48px; border: 1px solid var(--glass-border);">
+                {% if in_wishlist %}
+                    <i class="ph-fill ph-heart" style="color: var(--accent-rose);"></i>
+                {% else %}
+                    <i class="ph-bold ph-heart"></i>
+                {% endif %}
+            </button>
+        </div>
+        
+        <!-- Quick details accordion/info -->
+        <div style="border-top: 1px solid var(--glass-border); padding-top: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+            <p style="margin-bottom: 5px;"><strong>Fabric Care:</strong> Dry clean only to preserve luxury metallic gold and silver threads.</p>
+            <p><strong>Shipping:</strong> Free delivery across India. Shipped securely within 2-4 days.</p>
+        </div>
+    </div>
+</div>

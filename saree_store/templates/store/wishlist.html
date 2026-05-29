@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .wishlist-container {
+        padding: 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .wishlist-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .wishlist-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .wishlist-header p {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .products-grid-catalog {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+
+    @media (max-width: 1024px) {
+        .products-grid-catalog {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .products-grid-catalog {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+
+    .wishlist-remove-btn {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        background: rgba(4,4,7,0.8);
+        border: 1px solid var(--glass-border);
+        color: var(--accent-rose);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wishlist-container">
+    <div class="wishlist-header">
+        <h1>Your Wishlist</h1>
+        <p>Curated selections of your favorite saree designs.</p>
+    </div>
+
+    <div class="products-grid-catalog" id="wishlistGrid">
+        {% for item in wishlist_items %}
+        <div class="product-card-col" style="position: relative;">
+            <!-- Remove from wishlist button -->
+            <button class="wishlist-remove-btn wishlist-toggle active" data-product-id="{{ item.product.id }}" title="Remove item">
+                <i class="ph-fill ph-heart"></i>
+            </button>
+            
+            <div class="product-card">
+                <div class="product-image-wrap">
+                    <a href="{% url 'store:product_detail' item.product.slug %}" class="product-detail-link" data-slug="{{ item.product.slug }}">
+                        {% with imgs=item.product.images.all %}
+                            {% if imgs.count > 0 %}
+                                <img src="{{ imgs.0.image.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" alt="placeholder">
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                    
+                    <button class="btn btn-primary quick-add-btn" data-product-id="{{ item.product.id }}">
+                        <i class="ph-bold ph-shopping-bag" style="margin-right: 8px;"></i> Add to Bag
+                    </button>
+                </div>
+                
+                <div class="product-meta">
+                    <h3><a href="{% url 'store:product_detail' item.product.slug %}" class="product-detail-link" data-slug="{{ item.product.slug }}" style="text-decoration: none; color: inherit;">{{ item.product.name }}</a></h3>
+                    <div class="product-price">₹{{ item.product.current_price }}</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 80px 0;">
+            <i class="ph-bold ph-heart-break" style="font-size: 48px; color: var(--text-muted); margin-bottom: 20px; display:block;"></i>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">You haven't saved any sarees yet.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary">Discover Sarees</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wishlist.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       Product Details Custom Styles
+       ========================================================================== */
+    .detail-container {
+        padding: 60px 40px;
+        max-width: 1300px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 60px;
+    }
+
+    @media (max-width: 992px) {
+        .detail-container {
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+    }
+
+    /* Product Gallery Side */
+    .gallery-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .main-image-wrap {
+        width: 100%;
+        aspect-ratio: 3/4;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        background: var(--glass-bg);
+    }
+
+    .main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .thumbnail-row {
+        display: flex;
+        gap: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .thumbnail-card {
+        width: 80px;
+        aspect-ratio: 3/4;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        opacity: 0.6;
+        transition: opacity 0.3s ease, border-color 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .thumbnail-card.active, .thumbnail-card:hover {
+        opacity: 1;
+        border-color: var(--accent-gold);
+    }
+
+    .thumbnail-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Product Description Side */
+    .detail-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .detail-category {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent-gold);
+        margin-bottom: 10px;
+    }
+
+    .detail-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 400;
+        line-height: 1.2;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .detail-price {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--accent-gold);
+        margin-bottom: 25px;
+    }
+
+    .detail-desc {
+        color: var(--text-secondary);
+        line-height: 1.8;
+        font-size: 15px;
+        margin-bottom: 30px;
+    }
+
+    /* Actions */
+    .purchase-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 40px;
+        align-items: center;
+    }
+
+    .qty-selector {
+        display: flex;
+        align-items: center;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    .qty-btn-det {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .qty-input-det {
+        width: 40px;
+        text-align: center;
+        border: none;
+        background: none;
+        color: var(--text-primary);
+        font-weight: 600;
+        outline: none;
+    }
+
+    /* Tabs Panel */
+    .detail-tabs {
+        border-top: 1px solid var(--glass-border);
+        padding-top: 30px;
+    }
+
+    .tab-headers {
+        display: flex;
+        gap: 30px;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 500;
+        padding-bottom: 8px;
+        position: relative;
+    }
+
+    .tab-btn.active {
+        color: var(--text-primary);
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -11px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: var(--accent-gold);
+    }
+
+    .tab-content {
+        display: none;
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- Gallery Section -->
+    <div class="gallery-stack">
+        <div class="main-image-wrap">
+            {% with imgs=product.images.all %}
+                {% if imgs.count > 0 %}
+                    <img src="{{ imgs.0.image.url }}" class="main-image" id="heroProductImage" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="main-image" id="heroProductImage" alt="Default Image">
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <!-- Thumbnails Strip -->
+        <div class="thumbnail-row">
+            {% for img in product.images.all %}
+            <div class="thumbnail-card {% if forloop.first %}active{% endif %}" data-img-url="{{ img.image.url }}">
+                <img src="{{ img.image.url }}" class="thumbnail-img" alt="{{ product.name }} thumbnail">
+            </div>
+            {% empty %}
+            <!-- Seed default thumbnails -->
+            <div class="thumbnail-card active" data-img-url="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600">
+                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" class="thumbnail-img" alt="placeholder">
+            </div>
+            <div class="thumbnail-card" data-img-url="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600">
+                <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600" class="thumbnail-img" alt="placeholder">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Product Meta Section -->
+    <div class="detail-info glass-card">
+        <span class="detail-category">{{ product.category.name }}</span>
+        <h1 class="detail-title">{{ product.name }}</h1>
+        
+        <div class="detail-price">
+            {% if product.sale_price %}
+                <span style="text-decoration: line-through; color: var(--text-muted); font-size: 18px; margin-right: 12px;">₹{{ product.price }}</span>
+                <span>₹{{ product.sale_price }}</span>
+            {% else %}
+                <span>₹{{ product.price }}</span>
+            {% endif %}
+        </div>
+        
+        <p class="detail-desc">{{ product.description }}</p>
+        
+        <!-- Cart & Wishlist Triggers -->
+        <div class="purchase-controls">
+            <div class="qty-selector">
+                <button type="button" class="qty-btn-det minus"><i class="ph-bold ph-minus"></i></button>
+                <input type="text" class="qty-input-det" value="1" readonly id="detailQty">
+                <button type="button" class="qty-btn-det plus"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            
+            <button class="btn btn-primary" id="detailAddToCart" data-product-id="{{ product.id }}" style="flex-grow: 1;">
+                <i class="ph-bold ph-shopping-bag" style="margin-right: 8px;"></i> Add to Bag
+            </button>
+            
+            <button class="icon-btn wishlist-toggle {% if in_wishlist %}active{% endif %}" data-product-id="{{ product.id }}" style="width: 48px; height: 48px; border: 1px solid var(--glass-border);">
+                {% if in_wishlist %}
+                    <i class="ph-fill ph-heart" style="color: var(--accent-rose);"></i>
+                {% else %}
+                    <i class="ph-bold ph-heart"></i>
+                {% endif %}
+            </button>
+        </div>
+        
+        <!-- Accordion details tabs -->
+        <div class="detail-tabs">
+            <div class="tab-headers">
+                <button class="tab-btn active" data-tab="tabDetails">Care & Details</button>
+                <button class="tab-btn" data-tab="tabShipping">Shipping & Returns</button>
+            </div>
+            
+            <div class="tab-content active" id="tabDetails">
+                <p>Dry clean only. Delicate weave embellished with metallic threadwork. Keep wrapped in muslin fabric to preserve the luxury threads and colors over generations.</p>
+                <ul style="margin-top: 10px; padding-left: 20px; list-style-type: circle;">
+                    <li>100% genuine premium fabric source.</li>
+                    <li>Authentic Handloom Certified.</li>
+                    <li>Sourced directly from weaving houses in Kanchipuram and Varanasi.</li>
+                </ul>
+            </div>
+            
+            <div class="tab-content" id="tabShipping">
+                <p>All items ship out within 2-4 business days. Delivery across major metro locations takes 5-7 business days. Fully insured and secure dispatch tracks delivered straight to your door.</p>
+                <p style="margin-top: 10px;">We accept unused exchanges within 7 days of delivery confirmation.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wishlist.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Thumbnail Click Switcher
+        const mainImg = document.getElementById('heroProductImage');
+        const thumbs = document.querySelectorAll('.thumbnail-card');
+        
+        thumbs.forEach(thumb => {
+            thumb.addEventListener('click', () => {
+                thumbs.forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+                mainImg.src = thumb.dataset.imgUrl;
+            });
+        });
+
+        // Tabs Toggle
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Quantity controls
+        const qtyMinus = document.querySelector('.qty-btn-det.minus');
+        const qtyPlus = document.querySelector('.qty-btn-det.plus');
+        const qtyInput = document.getElementById('detailQty');
+        
+        qtyMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value);
+            if (val > 1) qtyInput.value = val - 1;
+        });
+
+        qtyPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value);
+            qtyInput.value = val + 1;
+        });
+
+        // Add to Bag trigger
+        const addBtn = document.getElementById('detailAddToCart');
+        addBtn.addEventListener('click', () => {
+            const prodId = addBtn.dataset.productId;
+            const qty = parseInt(qtyInput.value);
+            addToCart(prodId, qty); // defined globally in cart.js
+        });
+    });
+</script>
+{% endblock %}

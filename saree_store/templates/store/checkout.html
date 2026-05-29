@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .checkout-container {
+        padding: 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 50px;
+    }
+
+    @media (max-width: 992px) {
+        .checkout-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .checkout-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        margin-bottom: 30px;
+    }
+
+    .form-group-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    /* Payment Methods selector */
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .payment-option-card {
+        border: 1px solid var(--glass-border);
+        background: var(--glass-bg);
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .payment-option-card:hover, .payment-option-card.selected {
+        border-color: var(--accent-gold);
+        background-color: var(--glass-bg-hover);
+    }
+
+    .payment-option-card input[type="radio"] {
+        accent-color: var(--accent-gold);
+        width: 18px;
+        height: 18px;
+    }
+
+    .payment-details h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .payment-details p {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .checkout-summary-card {
+        height: fit-content;
+        position: sticky;
+        top: calc(var(--header-height) + 20px);
+    }
+
+    .summary-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        letter-spacing: 1px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 15px;
+    }
+
+    .checkout-item-mini {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .checkout-item-name {
+        color: var(--text-secondary);
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .checkout-item-price {
+        font-weight: 500;
+    }
+
+    .summary-row-totals {
+        border-top: 1px solid var(--glass-border);
+        padding-top: 20px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-left">
+        <h1 class="checkout-title">Billing Details</h1>
+        
+        <form method="POST" id="checkoutForm" class="glass-card">
+            {% csrf_token %}
+            
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" name="first_name" id="first_name" required class="glass-input" placeholder="e.g. Aditi">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" required class="glass-input" placeholder="e.g. Sharma">
+                </div>
+            </div>
+            
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" required class="glass-input" placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" name="phone" id="phone" required class="glass-input" placeholder="10-digit number">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="address_line1">Address Line 1</label>
+                <input type="text" name="address_line1" id="address_line1" required class="glass-input" placeholder="Flat, House no., Apartment">
+            </div>
+
+            <div class="form-group">
+                <label for="address_line2">Address Line 2 (Optional)</label>
+                <input type="text" name="address_line2" id="address_line2" class="glass-input" placeholder="Area, Colony, Street">
+            </div>
+
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" name="city" id="city" required class="glass-input" placeholder="e.g. New Delhi">
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" name="state" id="state" required class="glass-input" placeholder="e.g. Delhi">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="postal_code">PIN Code</label>
+                <input type="text" name="postal_code" id="postal_code" required class="glass-input" placeholder="6-digit PIN">
+            </div>
+
+            <!-- Payment Methods Toggle Options -->
+            <div class="form-group" style="margin-top: 30px;">
+                <label>Payment Method</label>
+                <div class="payment-options">
+                    <label class="payment-option-card selected" id="phonepeCard">
+                        <input type="radio" name="payment_method" value="PhonePe" checked id="phonepeRadio">
+                        <div class="payment-details">
+                            <h4>PhonePe Gateway</h4>
+                            <p>Pay instantly with UPI QR, credit cards, or net banking via PhonePe.</p>
+                        </div>
+                    </label>
+                    
+                    <label class="payment-option-card" id="codCard">
+                        <input type="radio" name="payment_method" value="COD" id="codRadio">
+                        <div class="payment-details">
+                            <h4>Cash on Delivery (COD)</h4>
+                            <p>Pay with cash directly to delivery executive on arrival.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 35px; height: 50px;">
+                <i class="ph-bold ph-shield-check" style="margin-right: 8px; font-size:16px;"></i> Proceed to Payment
+            </button>
+        </form>
+    </div>
+
+    <!-- Review Items Sidebar -->
+    <div class="checkout-summary-card glass-card">
+        <h2 class="summary-title">Review Order</h2>
+        
+        <div class="checkout-items-list" style="margin-bottom: 25px;">
+            {% for item in cart_items %}
+            <div class="checkout-item-mini">
+                <span class="checkout-item-name">{{ item.quantity }} x {{ item.product.name }}</span>
+                <span class="checkout-item-price">₹{{ item.total_price }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="summary-row-item">
+            <span>Subtotal</span>
+            <span>₹{{ subtotal }}</span>
+        </div>
+        <div class="summary-row-item">
+            <span>Shipping Charges</span>
+            <span>FREE</span>
+        </div>
+        
+        <div class="summary-row-totals">
+            <span>Total Payable</span>
+            <span style="color: var(--accent-gold);">₹{{ subtotal }}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Toggle visual selection states for payment option cards
+        const ppCard = document.getElementById('phonepeCard');
+        const codCard = document.getElementById('codCard');
+        const ppRadio = document.getElementById('phonepeRadio');
+        const codRadio = document.getElementById('codRadio');
+        
+        ppCard.addEventListener('click', () => {
+            ppRadio.checked = true;
+            ppCard.classList.add('selected');
+            codCard.classList.remove('selected');
+        });
+
+        codCard.addEventListener('click', () => {
+            codRadio.checked = true;
+            codCard.classList.add('selected');
+            ppCard.classList.remove('selected');
+        });
+    });
+</script>
+{% endblock %}

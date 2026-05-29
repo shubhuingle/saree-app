@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       Product Catalog Custom Styles
+       ========================================================================= */
+    .catalog-container {
+        padding: 60px 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 40px;
+    }
+
+    @media (max-width: 992px) {
+        .catalog-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Filters Sidebar Panel */
+    .filter-sidebar {
+        position: sticky;
+        top: calc(var(--header-height) + 20px);
+        height: fit-content;
+    }
+
+    .filter-section {
+        margin-bottom: 30px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .filter-section h4 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+
+    .filter-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .filter-list a {
+        text-decoration: none;
+        font-size: 14px;
+        color: var(--text-secondary);
+        transition: color 0.3s ease, padding-left 0.3s ease;
+        display: block;
+    }
+
+    .filter-list a:hover, .filter-list a.active {
+        color: var(--accent-gold);
+        padding-left: 5px;
+    }
+
+    .price-range-inputs {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .price-input {
+        width: 80px;
+        text-align: center;
+        padding: 8px;
+    }
+
+    /* Toolbar Header */
+    .catalog-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .catalog-title h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+    }
+
+    .catalog-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .sort-select {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 13px;
+        outline: none;
+    }
+
+    /* Product Grid Card Placement */
+    .products-grid-catalog {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    @media (max-width: 1200px) {
+        .products-grid-catalog {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .products-grid-catalog {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .products-grid-catalog {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glass Loading overlay inside grid */
+    .grid-overlay {
+        position: relative;
+    }
+
+    .grid-overlay.loading::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(4,4,7,0.4);
+        backdrop-filter: blur(5px);
+        z-index: 50;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="catalog-container">
+    <!-- Sidebar Filters -->
+    <aside class="filter-sidebar glass-card">
+        <!-- Categories Filter -->
+        <div class="filter-section">
+            <h4>Categories</h4>
+            <ul class="filter-list">
+                <li><a href="{% url 'store:product_list' %}" class="{% if not selected_category %}active{% endif %}">All Sarees</a></li>
+                {% for cat in categories %}
+                <li>
+                    <a href="?category={{ cat.slug }}" class="{% if selected_category == cat.slug %}active{% endif %}" data-category="{{ cat.slug }}">
+                        {{ cat.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Price Range Filter -->
+        <div class="filter-section">
+            <h4>Price Range</h4>
+            <div class="price-range-inputs">
+                <input type="number" id="minPriceInput" placeholder="Min" class="glass-input price-input">
+                <span>-</span>
+                <input type="number" id="maxPriceInput" placeholder="Max" class="glass-input price-input">
+                <button class="btn btn-secondary btn-small" id="applyPriceBtn"><i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary btn-block btn-small" id="clearFiltersBtn">Clear Filters</button>
+    </aside>
+
+    <!-- Main Listing Panel -->
+    <section class="catalog-content">
+        <!-- Toolbar Header -->
+        <div class="catalog-toolbar">
+            <div class="catalog-title">
+                <h2>Browse Collection</h2>
+            </div>
+            
+            <div class="catalog-controls">
+                <select class="sort-select" id="sortSelect">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Arrivals</option>
+                    <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Featured Classics</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="grid-overlay" id="catalogGridOverlay">
+            <div class="products-grid-catalog" id="catalogProductGrid">
+                {% include 'store/includes/product_grid.html' %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wishlist.js' %}"></script>
+<script>
+    // AJAX Catalog Filter Script
+    document.addEventListener('DOMContentLoaded', () => {
+        const sortSelect = document.getElementById('sortSelect');
+        const minPrice = document.getElementById('minPriceInput');
+        const maxPrice = document.getElementById('maxPriceInput');
+        const applyPrice = document.getElementById('applyPriceBtn');
+        const clearBtn = document.getElementById('clearFiltersBtn');
+        const gridOverlay = document.getElementById('catalogGridOverlay');
+        const grid = document.getElementById('catalogProductGrid');
+
+        let currentCategory = new URLSearchParams(window.location.search).get('category') || '';
+
+        function updateCatalog() {
+            gridOverlay.classList.add('loading');
+            
+            const params = new URLSearchParams();
+            if (currentCategory) params.append('category', currentCategory);
+            params.append('sort', sortSelect.value);
+            if (minPrice.value) params.append('min_price', minPrice.value);
+            if (maxPrice.value) params.append('max_price', maxPrice.value);
+            
+            fetch(`${window.location.pathname}?${params.toString()}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                grid.innerHTML = data.html;
+                // Re-bind mouseover listeners for custom cursor if present
+                initCustomCursor();
+                gridOverlay.classList.remove('loading');
+            })
+            .catch(err => {
+                console.error(err);
+                gridOverlay.classList.remove('loading');
+            });
+        }
+
+        // Event triggers
+        sortSelect.addEventListener('change', updateCatalog);
+        applyPrice.addEventListener('click', updateCatalog);
+        
+        // Listen on categories sidebar
+        document.querySelectorAll('[data-category]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('[data-category]').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                currentCategory = link.dataset.category;
+                updateCatalog();
+            });
+        });
+
+        clearBtn.addEventListener('click', () => {
+            minPrice.value = '';
+            maxPrice.value = '';
+            sortSelect.value = 'newest';
+            document.querySelectorAll('[data-category]').forEach(l => l.classList.remove('active'));
+            currentCategory = '';
+            updateCatalog();
+        });
+    });
+</script>
+{% endblock %}

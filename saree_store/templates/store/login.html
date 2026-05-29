@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 450px;
+        margin: 80px auto;
+        padding: 40px;
+    }
+
+    .auth-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+    }
+
+    .form-links {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .form-links a {
+        color: var(--accent-gold);
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container glass-card reveal active">
+    <h1 class="auth-title">Welcome Back</h1>
+    
+    <form method="POST">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div style="color: var(--accent-rose); margin-bottom: 20px; font-size:13px; border: 1px solid var(--accent-rose); padding: 10px; border-radius: 4px; background: rgba(232, 160, 160, 0.05);">
+                Please check your username and password.
+            </div>
+        {% endif %}
+        
+        {% for field in form %}
+            <div class="form-group" style="margin-bottom: 20px; display:flex; flex-direction:column; gap:8px;">
+                <label for="{{ field.id_for_label }}" style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary);">{{ field.label }}</label>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" required class="glass-input">
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 25px; height: 50px;">Sign In</button>
+    </form>
+    
+    <div class="form-links">
+        <p>Don't have an account? <a href="{% url 'store:register' %}">Create account</a></p>
+    </div>
+</div>
+{% endblock %}

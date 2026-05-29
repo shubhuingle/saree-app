@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .cart-page-container {
+        padding: 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 50px;
+    }
+
+    @media (max-width: 992px) {
+        .cart-page-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .cart-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        margin-bottom: 30px;
+    }
+
+    .cart-table-card {
+        border-radius: 8px;
+        padding: 30px;
+    }
+
+    /* Cart item rows styling */
+    .cart-items-container {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .cart-item-row {
+        display: grid;
+        grid-template-columns: 80px 2.5fr 1fr 1fr auto;
+        gap: 20px;
+        align-items: center;
+        padding-bottom: 25px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .cart-item-row img {
+        width: 70px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .cart-item-row-info h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .cart-item-row-info p {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .cart-item-row-price {
+        font-weight: 600;
+        color: var(--accent-gold);
+    }
+
+    .cart-item-row-qty {
+        display: flex;
+        align-items: center;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        padding: 4px;
+        width: fit-content;
+    }
+
+    .cart-item-row-total {
+        font-weight: 600;
+    }
+
+    /* Cart Summary Card */
+    .cart-summary-card {
+        height: fit-content;
+        position: sticky;
+        top: calc(var(--header-height) + 20px);
+    }
+
+    .summary-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        letter-spacing: 1px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 15px;
+    }
+
+    .summary-row-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .summary-total {
+        border-top: 1px solid var(--glass-border);
+        padding-top: 20px;
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cart-page-container">
+    <div class="cart-left-section">
+        <h1 class="cart-title">Your Shopping Bag</h1>
+        
+        <div class="cart-table-card glass-card">
+            <div class="cart-items-container">
+                {% for item in cart_items %}
+                <div class="cart-item-row">
+                    {% with imgs=item.product.images.all %}
+                        {% if imgs.count > 0 %}
+                            <img src="{{ imgs.0.image.url }}" alt="{{ item.product.name }}" class="cart-item-img">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600" alt="placeholder" class="cart-item-img">
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="cart-item-row-info">
+                        <h3>{{ item.product.name }}</h3>
+                        <p>{{ item.product.category.name }}</p>
+                    </div>
+                    
+                    <div class="cart-item-row-price">
+                        ₹{{ item.product.current_price }}
+                    </div>
+                    
+                    <div class="cart-item-row-qty">
+                        <button class="qty-btn minus" data-item-id="{{ item.id }}"><i class="ph-bold ph-minus"></i></button>
+                        <input type="text" class="qty-input" value="{{ item.quantity }}" style="width:30px; border:none; background:none; text-align:center; color:inherit; font-weight:600;" readonly>
+                        <button class="qty-btn plus" data-item-id="{{ item.id }}"><i class="ph-bold ph-plus"></i></button>
+                    </div>
+                    
+                    <button class="icon-btn remove-cart-item" data-item-id="{{ item.id }}" title="Remove item" style="color: var(--accent-rose);">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding: 40px 0;">
+                    <i class="ph-bold ph-shopping-bag" style="font-size: 48px; color: var(--text-muted); margin-bottom: 20px; display:block;"></i>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Your shopping bag is currently empty.</p>
+                    <a href="{% url 'store:product_list' %}" class="btn btn-primary">Start Shopping</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Details Panel -->
+    <div class="cart-summary-card glass-card">
+        <h2 class="summary-title">Order Summary</h2>
+        
+        <div class="summary-row-item">
+            <span>Subtotal</span>
+            <span id="cartPageSubtotal">₹{{ subtotal }}</span>
+        </div>
+        <div class="summary-row-item">
+            <span>Shipping</span>
+            <span>FREE</span>
+        </div>
+        <div class="summary-row-item">
+            <span>Tax (Estimated)</span>
+            <span>₹0.00</span>
+        </div>
+        
+        <div class="summary-row-item summary-total">
+            <span>Total</span>
+            <span>₹{{ total }}</span>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            {% if cart_items %}
+                <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block">Proceed to Checkout</a>
+            {% else %}
+                <button class="btn btn-secondary btn-block" disabled>Checkout Disabled</button>
+            {% endif %}
+            <a href="{% url 'store:product_list' %}" class="btn btn-secondary btn-block">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

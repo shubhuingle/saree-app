@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .failed-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .failed-icon {
+        font-size: 80px;
+        color: var(--accent-rose);
+        margin-bottom: 25px;
+    }
+
+    .failed-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.8rem;
+        margin-bottom: 15px;
+    }
+
+    .failed-message {
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="failed-container glass-card">
+    <div class="failed-icon">
+        <i class="ph-fill ph-x-circle"></i>
+    </div>
+    
+    <h1 class="failed-title">Payment Failed</h1>
+    <p class="failed-message">The payment transaction was cancelled or declined by your institution. Please review your credentials or select an alternative payment method.</p>
+    
+    <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block">Try Again</a>
+    <a href="{% url 'store:cart' %}" class="btn btn-secondary btn-block">Return to Bag</a>
+</div>
+{% endblock %}

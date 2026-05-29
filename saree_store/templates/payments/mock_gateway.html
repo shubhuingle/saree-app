@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhonePe Secure Payment Gateway</title>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --phonepe-purple: #5f259f;
+            --phonepe-purple-hover: #4e1e82;
+            --bg-color: #f7f9fa;
+            --text-dark: #222;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .gateway-card {
+            background-color: #fff;
+            width: 480px;
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gateway-header {
+            background-color: var(--phonepe-purple);
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gateway-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-info {
+            background-color: #f0ebf7;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .amount-highlight {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--phonepe-purple);
+        }
+
+        .payment-methods {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .method-tab {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .method-tab:hover, .method-tab.active {
+            border-color: var(--phonepe-purple);
+            background-color: #faf7ff;
+        }
+
+        .method-tab input[type="radio"] {
+            accent-color: var(--phonepe-purple);
+            margin-top: 3px;
+        }
+
+        .method-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .method-details p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .tab-content-details {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .method-tab.active .tab-content-details {
+            display: block;
+        }
+
+        .upi-qr-box {
+            text-align: center;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qr-placeholder {
+            width: 160px;
+            height: 160px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--phonepe-purple);
+        }
+
+        .pay-btn {
+            background-color: var(--phonepe-purple);
+            color: #fff;
+            border: none;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .pay-btn:hover {
+            background-color: var(--phonepe-purple-hover);
+        }
+
+        /* Screen preloader mock */
+        .gateway-loader {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255,255,255,0.95);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .spinner {
+            font-size: 40px;
+            color: var(--phonepe-purple);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="gateway-card" style="position: relative;">
+    <!-- Loading Screen Mock -->
+    <div class="gateway-loader" id="gatewayLoader">
+        <i class="ph-bold ph-spinner spinner"></i>
+        <h3 id="loaderStatus">Authorizing payment...</h3>
+        <p style="font-size:12px; color:var(--text-light)">Do not close or reload this window</p>
+    </div>
+
+    <!-- Header bar -->
+    <div class="gateway-header">
+        <h2><i class="ph-bold ph-shield-check"></i> PhonePe Secure Pay</h2>
+        <div style="font-size: 12px; opacity:0.8;">Merchant ID: {{ payment_data.merchant_id|default:"DEMO_ID" }}</div>
+    </div>
+
+    <!-- Order summary -->
+    <div class="order-info">
+        <div>
+            <div style="color: var(--text-light); font-size: 12px;">ORDER REF</div>
+            <div style="font-weight:600;">ZG-{{ order.id|stringformat:"05d" }}</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="color: var(--text-light); font-size: 12px;">AMOUNT PAYABLE</div>
+            <div class="amount-highlight">₹{{ order.total_amount }}</div>
+        </div>
+    </div>
+
+    <!-- Payment selectors -->
+    <div class="payment-methods">
+        <!-- Option 1: QR code UPI -->
+        <div class="method-tab active" data-target="upiTab">
+            <input type="radio" name="payment_mode" checked id="upiRadio">
+            <div class="method-details" style="flex-grow: 1;">
+                <h4>UPI QR Code</h4>
+                <p>Scan the code instantly using any UPI application (PhonePe, GPay, Paytm).</p>
+                
+                <div class="tab-content-details" id="upiTab" style="display:block;">
+                    <div class="upi-qr-box">
+                        <div class="qr-placeholder">
+                            <!-- Draw a simple SVG dummy QR -->
+                            <svg width="120" height="120" viewBox="0 0 29 29" style="image-rendering: pixelated;">
+                                <path fill="#222" d="M0 0h7v7H0zm1 1v5h5V1zm1 1h3v3H2zm6-2h1v1H8zm1 1h2v1H9zm1 1h1v1h-1zm-2 1h1v2H8zm2 1h1v1h-1zm1 1h1v1h-1zm-3 1h1v1H8zm1 1h2v1H9zm1 1h1v1h-1zm12-10h7v7h-7zm1 1v5h5V11zm1 1h3v3H14zm6-2h1v1h-1zm1 1h2v1h-2zm1 1h1v1h-1zm-2 1h1v2h-1zm2 1h1v1h-1zm1 1h1v1h-1zm-3 1h1v1h-1zm1 1h2v1h-2zm1 1h1v1h-1zm-22 10h7v7H0zm1 1v5h5v-5zm1 1h3v3H2zm10-10h1v1h-1zm2 0h2v1h-2zm1 1h1v2h-1zm-3 2h1v1h-1zm2 0h1v1h-1zm1 1h2v1h-2zm-3 1h1v2h-1zm2 1h2v1h-2zm-2 2h3v1h-3zm10-10h1v1h-1zm1 1h2v1h-2zm1 1h1v1h-1zm-2 1h1v2h-1zm2 1h1v1h-1zm1 1h1v1h-1zm-3 1h1v1h-1zm1 1h2v1h-2zm1 1h1v1h-1z" />
+                            </svg>
+                        </div>
+                        <span style="font-size:11px; color:var(--text-light);">Scan QR to complete transaction</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option 2: Card Payments -->
+        <div class="method-tab" data-target="cardTab">
+            <input type="radio" name="payment_mode" id="cardRadio">
+            <div class="method-details" style="flex-grow: 1;">
+                <h4>Credit / Debit Card</h4>
+                <p>Visa, Mastercard, RuPay and Maestro accepted.</p>
+                
+                <div class="tab-content-details" id="cardTab">
+                    <div class="form-group-g" style="margin-bottom: 10px;">
+                        <input type="text" class="form-control" placeholder="Card Number" maxlength="19">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                        <input type="password" class="form-control" placeholder="CVV" maxlength="3">
+                    </div>
+                    <input type="text" class="form-control" placeholder="Cardholder Name">
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulated CTAs -->
+        <button class="pay-btn" id="paySubmitBtn">
+            <i class="ph-bold ph-lock-key"></i> Pay ₹{{ order.total_amount }} Securely
+        </button>
+    </div>
+</div>
+
+<form id="callbackForm" action="{% url 'payments:callback' %}" method="POST" style="display:none;">
+    <input type="hidden" name="order_id" value="{{ order.id }}">
+    <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
+    <input type="hidden" name="status" value="SUCCESS">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.method-tab');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // If clicked input directly, let standard bubble happen
+                const radio = tab.querySelector('input[type="radio"]');
+                if (e.target !== radio) {
+                    radio.checked = true;
+                }
+                
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    const details = t.querySelector('.tab-content-details');
+                    if (details) details.style.display = 'none';
+                });
+                
+                tab.classList.add('active');
+                const targetDetails = document.getElementById(tab.dataset.target);
+                if (targetDetails) targetDetails.style.display = 'block';
+            });
+        });
+
+        // Pay action
+        const payBtn = document.getElementById('paySubmitBtn');
+        const loader = document.getElementById('gatewayLoader');
+        const callbackForm = document.getElementById('callbackForm');
+        
+        payBtn.addEventListener('click', () => {
+            payBtn.disabled = true;
+            loader.style.display = 'flex';
+            
+            // Simulates processing delays
+            setTimeout(() => {
+                document.getElementById('loaderStatus').textContent = "Authenticating OTP approval...";
+                setTimeout(() => {
+                    document.getElementById('loaderStatus').textContent = "Securing transaction hashes...";
+                    setTimeout(() => {
+                        // Submit mock response form back to app callback handler
+                        callbackForm.submit();
+                    }, 1200);
+                }, 1200);
+            }, 1500);
+        });
+    });
+</script>
+</body>
+</html>
